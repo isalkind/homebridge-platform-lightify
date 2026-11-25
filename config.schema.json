@@ -1,0 +1,21 @@
+{
+  "pluginAlias": "Lightify",
+  "pluginType": "platform",
+  "singular": true,
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": { "title": "Name", "type": "string", "default": "Lightify", "required": true },
+      "bridge_ip": { "title": "Gateway IP address", "type": "string", "format": "ipv4", "required": true },
+      "showGroups": { "title": "Expose Lightify groups (zones)", "type": "boolean", "default": false },
+      "hideNodes": { "title": "Hide individual devices", "type": "boolean", "default": false },
+      "pollInterval": {
+        "title": "Poll interval (seconds)",
+        "type": "number",
+        "default": 5,
+        "minimum": 1,
+        "description": "How often the gateway is polled so HomeKit follows changes made elsewhere."
+      }
+    }
+  }
+}

@@ -1,28 +1,32 @@
-# OSRAM Lightify Platform for homebridge
-This is an OSRAM Lightify plugin for [homebridge](https://github.com/nfarina/homebridge).
+# homebridge-platform-lightify (0.4.0, modernized fork)
 
-## Setup
-1. Add via `npm install -g homebridge-platform-lightify`
-2. Add to the homebridge config.json in the `platforms` section
+Homebridge plugin for OSRAM Lightify gateways, using the gateway's local protocol (TCP 4000).
+The Lightify *cloud* was shut down in 2021; the local protocol does not need it.
+
+Based on rainlake/homebridge-platform-lightify 0.3.7. Changes in 0.4.0:
+
+- Fixes the startup hang on Homebridge >= 1.x/2.x (`Class constructor Service cannot be invoked without 'new'`).
+- `accessories()` always returns promptly; if the gateway is unreachable it falls back to `lightify-cache.json`
+  in the Homebridge storage folder, so HomeKit keeps your devices and they recover when the gateway returns.
+- Zero dependencies; Node >= 18.
+- Gateway traffic is serialized (one connection at a time) and polling no longer piles up connections.
+- State changes made elsewhere are pushed to HomeKit; colour temperature and hue/saturation fixes.
+
+## Config
+
 ```json
 {
   "platform": "Lightify",
-  "bridge_ip": "x.x.x.x",
-  "name" : "Lightify",
-  "showGroups" : true,
-  "hideNodes" : false
+  "name": "Lightify",
+  "bridge_ip": "192.168.1.50",
+  "showGroups": false,
+  "hideNodes": false,
+  "pollInterval": 5
 }
-```  
-bridge_ip: ip address of your lightify bridge/hub  
-showGroups: defaults to `false`  
-hideNodes: defaults to `false`  
-All other fields are required
+```
 
-## About
-This plugin uses the proprietary lightify protocol that the hub uses to commnicate with the lights, rather than the JSON API provided by lightify.
+## Check the gateway first
 
-This plugin works with all Lightify products including Tunable White bulbs and outlets. 
-
-Contact sensors are now supported with a resolution of 2 seconds.
-
-Please report any issues on github.
+```
+node scripts/probe.js 192.168.1.50      # DEBUG=1 for raw protocol
+```
