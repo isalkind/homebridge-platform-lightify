@@ -1,21 +1,13 @@
-# homebridge-platform-lightify (0.5.0, modernized fork)
+# homebridge-platform-lightify
 
 Homebridge plugin for OSRAM Lightify gateways, using the gateway's local protocol (TCP 4000).
 The Lightify *cloud* was shut down in 2021; the local protocol does not need it.
 
-Based on rainlake/homebridge-platform-lightify 0.3.7. Changes:
+Based on rainlake/homebridge-platform-lightify 0.3.7.
 
-- **0.5.0:** automatic gateway discovery via mDNS; `bridge_ip` is now optional. The last IP found is remembered and
-  the search repeats if the gateway moves (DHCP).
+Original project appears abandoned. Resurrected for my own purposes with lots of help from AI. Use at your own risk.
 
-0.4.0:
-
-- Fixes the startup hang on Homebridge >= 1.x/2.x (`Class constructor Service cannot be invoked without 'new'`).
-- `accessories()` always returns promptly; if the gateway is unreachable it falls back to `lightify-cache.json`
-  in the Homebridge storage folder, so HomeKit keeps your devices and they recover when the gateway returns.
-- Zero dependencies; Node >= 18.
-- Gateway traffic is serialized (one connection at a time) and polling no longer piles up connections.
-- State changes made elsewhere are pushed to HomeKit; colour temperature and hue/saturation fixes.
+See CHANGELOG for changes.
 
 ## Config
 
