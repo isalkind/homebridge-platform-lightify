@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const lightify = require('./lib/lightify');
+const { discoverGateway } = require('./lib/discover');
 
 let Service, Characteristic, HapStatusError, HAPStatus;
 
@@ -81,6 +82,11 @@ class LightifyPlatform {
     try { storage = api.user.storagePath(); } catch (e) { /* older/odd hosts */ }
     this.cacheFile = path.join(storage, 'lightify-cache.json');
 
+    // No bridge_ip (or "auto") means: find the gateway via mDNS, remembering the last IP we saw.
+    const ip = typeof this.config.bridge_ip === 'string' ? this.config.bridge_ip.trim() : '';
+    this.auto = !ip || ip.toLowerCase() === 'auto';
+    this.host = this.auto ? this.readCachedHost() : ip;
+
     if (api && api.on) {
       api.on('shutdown', () => {
         this.stopped = true;
@@ -89,19 +95,47 @@ class LightifyPlatform {
     }
   }
 
-  newConnection() {
-    return new lightify.Lightify(this.config.bridge_ip, this.log, {
+  newConnection(host) {
+    return new lightify.Lightify(host, this.log, {
       connectTimeout: 5000,
       commandTimeout: 5000,
     });
   }
 
+  // Connects to the gateway. In auto mode: last known IP first, then mDNS discovery.
+  async open() {
+    if (!this.auto) {
+      const c = this.newConnection(this.host);
+      try { await c.connect(); } catch (err) { c.dispose(); throw err; }
+      return c;
+    }
+
+    if (this.host) {
+      const c = this.newConnection(this.host);
+      try {
+        await c.connect();
+        return c;
+      } catch (err) {
+        c.dispose();
+        this.log.debug('Gateway not at remembered address %s (%s); searching.', this.host, err.message);
+        this.host = undefined;
+      }
+    }
+
+    const found = await discoverGateway({ timeout: 4000 });
+    if (!found) throw new Error('no Lightify gateway answered the mDNS search (set "bridge_ip" if it is on another subnet)');
+    this.log.info('Found Lightify gateway "%s" at %s', found.name, found.ip);
+    const c = this.newConnection(found.ip);
+    try { await c.connect(); } catch (err) { c.dispose(); throw err; }
+    this.host = found.ip;
+    return c;
+  }
+
   // Run fn(connection) on a fresh connection, strictly after any earlier gateway work finishes.
   run(fn) {
     const task = async () => {
-      const connection = this.newConnection();
+      const connection = await this.open();
       try {
-        await connection.connect();
         return await fn(connection);
       } finally {
         connection.dispose();
@@ -152,19 +186,28 @@ class LightifyPlatform {
     return nodes.concat(zones);
   }
 
-  readCache() {
+  readCacheFile() {
     try {
-      const data = JSON.parse(fs.readFileSync(this.cacheFile, 'utf8'));
-      return Array.isArray(data.devices) ? data.devices : [];
+      return JSON.parse(fs.readFileSync(this.cacheFile, 'utf8')) || {};
     } catch (e) {
-      return [];
+      return {};
     }
+  }
+
+  readCache() {
+    const data = this.readCacheFile();
+    return Array.isArray(data.devices) ? data.devices : [];
+  }
+
+  readCachedHost() {
+    const data = this.readCacheFile();
+    return typeof data.host === 'string' ? data.host : undefined;
   }
 
   writeCache(devices) {
     try {
       const tmp = `${this.cacheFile}.tmp`;
-      fs.writeFileSync(tmp, JSON.stringify({ saved: new Date().toISOString(), devices }));
+      fs.writeFileSync(tmp, JSON.stringify({ saved: new Date().toISOString(), host: this.auto ? this.host : undefined, devices }));
       fs.renameSync(tmp, this.cacheFile);
     } catch (e) {
       this.log.debug('Could not write device cache: %s', e.message);
@@ -173,11 +216,6 @@ class LightifyPlatform {
 
   // Static platform entry point. Homebridge waits for this callback, so it must always fire.
   accessories(callback) {
-    if (!this.config.bridge_ip) {
-      this.log.error('"bridge_ip" is not set in the Lightify platform config.');
-      return callback([]);
-    }
-
     let finished = false;
     const finish = (devices, fromCache) => {
       if (finished) return;
@@ -199,7 +237,7 @@ class LightifyPlatform {
         finish(devices, false);
       })
       .catch((err) => {
-        this.log.error('Could not talk to the Lightify gateway at %s:4000 (%s).', this.config.bridge_ip, err.message);
+        this.log.error('Could not talk to the Lightify gateway%s (%s).', this.host ? ` at ${this.host}:4000` : '', err.message);
         const cached = this.readCache();
         if (!cached.length) {
           this.log.error('No cached devices either, so no accessories will be created. Fix connectivity and restart Homebridge.');

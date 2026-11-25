@@ -5,10 +5,27 @@
   "schema": {
     "type": "object",
     "properties": {
-      "name": { "title": "Name", "type": "string", "default": "Lightify", "required": true },
-      "bridge_ip": { "title": "Gateway IP address", "type": "string", "format": "ipv4", "required": true },
-      "showGroups": { "title": "Expose Lightify groups (zones)", "type": "boolean", "default": false },
-      "hideNodes": { "title": "Hide individual devices", "type": "boolean", "default": false },
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "default": "Lightify",
+        "required": true
+      },
+      "bridge_ip": {
+        "title": "Gateway IP address",
+        "type": "string",
+        "description": "Optional. Leave empty (or enter \"auto\") to find the gateway automatically via mDNS. Set it if the gateway is on a different subnet/VLAN than Homebridge."
+      },
+      "showGroups": {
+        "title": "Expose Lightify groups (zones)",
+        "type": "boolean",
+        "default": false
+      },
+      "hideNodes": {
+        "title": "Hide individual devices",
+        "type": "boolean",
+        "default": false
+      },
       "pollInterval": {
         "title": "Poll interval (seconds)",
         "type": "number",

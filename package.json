@@ -1,9 +1,14 @@
 {
   "name": "homebridge-platform-lightify",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Homebridge plugin for OSRAM Lightify gateways using the local protocol (modernized fork of rainlake/homebridge-platform-lightify)",
   "license": "ISC",
-  "keywords": ["homebridge-plugin", "lightify", "osram", "ledvance"],
+  "keywords": [
+    "homebridge-plugin",
+    "lightify",
+    "osram",
+    "ledvance"
+  ],
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -16,6 +21,13 @@
     "node": ">=18.15.0",
     "homebridge": "^1.6.0 || ^2.0.0-beta.0"
   },
-  "files": ["index.js", "lib", "scripts", "config.schema.json", "README.md", "LICENSE"],
+  "files": [
+    "index.js",
+    "lib",
+    "scripts",
+    "config.schema.json",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {}
 }

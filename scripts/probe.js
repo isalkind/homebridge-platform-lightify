@@ -1,21 +1,27 @@
 #!/usr/bin/env node
 'use strict';
 
-// Usage: node scripts/probe.js <gateway-ip> [port]
+// Usage: node scripts/probe.js [gateway-ip] [port]   (no IP: search the LAN via mDNS)
 // Connects to the Lightify gateway's local protocol and prints what it finds.
 
 const lightify = require('../lib/lightify');
 
-const ip = process.argv[2];
+let ip = process.argv[2];
 const port = Number(process.argv[3]) || 4000;
-if (!ip) {
-  console.error('usage: node probe.js <gateway-ip> [port]');
-  process.exit(2);
-}
 
 const logger = process.env.DEBUG ? { debug: (...a) => console.error('[debug]', ...a) } : undefined;
 
 (async () => {
+  if (!ip || ip === 'auto') {
+    console.log('searching for a Lightify gateway via mDNS (up to 6 s)...');
+    const found = await require('../lib/discover').discoverGateway({ timeout: 6000 });
+    if (!found) {
+      console.error('no gateway answered. Is it on the same subnet? Try passing its IP.');
+      process.exit(1);
+    }
+    console.log(`found "${found.name}" at ${found.ip}`);
+    ip = found.ip;
+  }
   const conn = new lightify.Lightify(ip, logger, { port, connectTimeout: 5000, commandTimeout: 5000 });
   const t0 = Date.now();
   await conn.connect();
