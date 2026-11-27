@@ -1,5 +1,5 @@
 {
-  "name": "homebridge-platform-lightify",
+  "name": "@isalkind/homebridge-platform-lightify",
   "version": "0.5.0",
   "description": "Homebridge plugin for OSRAM Lightify gateways using the local protocol (modernized fork of rainlake/homebridge-platform-lightify)",
   "license": "ISC",
@@ -12,10 +12,10 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git://github.com/rainlake/homebridge-platform-lightify.git"
+    "url": "https://github.com/isalkind/homebridge-platform-lightify.git"
   },
   "bugs": {
-    "url": "https://github.com/rainlake/homebridge-platform-lightify/issues"
+    "url": "https://github.com/isalkind/homebridge-platform-lightify/issues"
   },
   "engines": {
     "node": ">=18.15.0",
@@ -29,5 +29,9 @@
     "README.md",
     "LICENSE"
   ],
-  "dependencies": {}
+  "dependencies": {},
+  "funding": {
+    "type": "paypal",
+    "url": "https://paypal.me/isalkind"
+  }
 }
