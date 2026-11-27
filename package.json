@@ -12,7 +12,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/isalkind/homebridge-platform-lightify.git"
+    "url": "git+https://github.com/isalkind/homebridge-platform-lightify.git"
   },
   "bugs": {
     "url": "https://github.com/isalkind/homebridge-platform-lightify/issues"
